@@ -1,15 +1,17 @@
-import { useDispatch } from 'react-redux';
+
 import './App.css'
-import { fetchPokeData } from './store/pokemonSlice';
+import PokeView from './components/PokeView'
+import Search from './components/Search'
+
 
 function App() {
-  const dispatch = useDispatch();
 
 
   return (
-    <>
-      <button onClick={() => dispatch(fetchPokeData(2))}>Click</button>
-    </>
+    <main className='w-screen h-screen flex flex-col items-center justify-center'>
+      <Search />
+      <PokeView />
+    </main>
   )
 }
 

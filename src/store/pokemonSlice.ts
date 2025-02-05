@@ -13,8 +13,7 @@ const initialState: PokemonState = {
 
 export const fetchPokeData = createAsyncThunk("pokemon/fetchPokeData",
     async (input: string | number) => {
-        // const pokeData = await pokeBasicInfo(input);
-        const pokeData = await pokeInfo(input)
+        const pokeData = await pokeInfo(input);
         return pokeData
     }
 )

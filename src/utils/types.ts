@@ -1,9 +1,14 @@
 
 
-// export interface PokemonSprites {
-//     front_default: string; 
-//   }
-
+interface PokemonSprites {
+    fullImg: string | null;
+    miniImg: string | null;
+    other: string | null;
+}
+interface PokemonText {
+    flavor_text: string;
+    language: { name: string, id: number }
+}
 interface PokemonStat {
     base_stat: number;
     stat: { name: string; id: number };
@@ -11,10 +16,15 @@ interface PokemonStat {
 
 interface PokemonAbility {
     ability: { name: string; id: number };
+    slot: number;
+}
+interface PokemonType {
+    type: { name: string; id: number };
+    slot: number;
 }
 
 interface PokemonColor {
-    color: { name: string, id: number};
+    color: { name: string, id: number };
 }
 // Tipado de la respuesta de "pokemon-species"
 export interface PokemonSpecies {
@@ -23,6 +33,10 @@ export interface PokemonSpecies {
         url: string;
     };
     evolves_from_species: { name: string, id: number } | null;
+    flavor_text_entries: {
+        flavor_text: string;
+        language: { name: string, url: string }
+    }
 }
 
 // Tipado de la respuesta de "evolution-chain"
@@ -64,11 +78,14 @@ export interface Evolutions {
 export interface Pokemon {
     id: number;
     name: string;
-    sprites: Record<string, unknown>;
+    sprites: PokemonSprites;
     stats: PokemonStat[];
     abilities: PokemonAbility[];
+    types: PokemonType[];
     color: PokemonColor;
     evolutions: Evolutions;
+    description: PokemonText[];
+
 }
 
 export interface PokemonState {
