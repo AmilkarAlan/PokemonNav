@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-      <button onClick={() => dispatch(fetchPokeData(1))}>Click</button>
+      <button onClick={() => dispatch(fetchPokeData(2))}>Click</button>
     </>
   )
 }

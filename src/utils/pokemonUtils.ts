@@ -1,51 +1,94 @@
 import { fetchFromApi } from "./api";
 import { EvolutionChain, Evolutions, Pokemon, PokemonSpecies } from "./types";
 
-export const pokeBasicInfo = async (input: string | number): Promise<Pokemon | null> => {
+const pokeBasicInfo = async (input: string | number) => {
     try {
         const data = await fetchFromApi("pokemon", input);
-        const { id, name, sprites, stats, abilities } = data
-        const formatStats = stats.map((stat: { base_stat: number; effort?: number; stat: { name: string }; }) => ({
-            base_stat: stat.base_stat,
-            statName: stat.stat.name
-        }))
-        const formatAbilities = abilities.map((ab: { ability: { name: string }; slot: number }) => ({
-            abilityName: ab.ability.name,
-            slot: ab.slot
-        }))
-        return { id, name, sprites, stats: formatStats, abilities: formatAbilities }
+        const { id, name, sprites, stats, abilities } = data;
+
+        return {
+            id,
+            name,
+            sprites,
+            stats: stats.map((stat: { base_stat: number; stat: { name: string, url: string }; }) => ({
+                base_stat: stat.base_stat,
+                stat: { name: stat.stat.name, id: parseInt(stat.stat.url.split("/").slice(-2)[0]) }
+            })),
+            abilities: abilities.map((ab: { ability: { name: string, url: string }; slot: number }) => ({
+                ability: { name: ab.ability.name, id: parseInt(ab.ability.url.split("/").slice(-2)[0]) },
+                slot: ab.slot
+            }))
+        };
     } catch (error) {
-        console.log(error);
-        return null
+        console.error("Error en pokeBasicInfo:", error);
+        throw new Error("No se pudo obtener la información básica del Pokémon");
     }
 };
 
-export const pokemonExtraInfo = async (input: string | number) => {
+const pokeExtraInfo = async (input: string | number) => {
     try {
         const data: PokemonSpecies = await fetchFromApi("pokemon-species", input);
-        const { color, evolution_chain, evolves_from_species } = data;
-        const evolId = parseInt(evolution_chain.url.split("/").slice(-2)[0]);
-        const evolData: EvolutionChain = await fetchFromApi("evolution-chain", evolId);
-        let evolutions: Evolutions = {
-            notEvolution: true
-        }
-        if (evolData.chain.evolves_to.length > 0) {
-            evolutions = {
-                notEvolution: false,
-                firstEvol: { name: evolData.chain.evolves_to[0].species.name, id: parseInt(evolData.chain.evolves_to[0].species.url.split("/").slice(-2)[0]) }
-            }
-        }
-        if (evolData.chain.evolves_to[0]?.evolves_to.length) {
-            evolutions = {
-                ...evolutions,
-                lastEvol: { name: evolData.chain.evolves_to[0].evolves_to[0].species.name, id: parseInt(evolData.chain.evolves_to[0].evolves_to[0].species.url.split("/").slice(-2)[0]) }
-            }
-        }
-
-        return { color, evolId, evolves_from_species, evolutions }
-
+        const color = {
+            name: data.color.name,
+            id: parseInt(data.color.url.split("/").slice(-2)[0])
+        };
+        return { color, evolId: parseInt(data.evolution_chain.url.split("/").slice(-2)[0]) };
     } catch (error) {
-        console.log(error);
+        console.error("Error en pokeExtraInfo:", error);
+        throw new Error("No se pudo obtener información adicional del Pokémon");
+    }
+};
+
+const extractEvolutions = (chain: any): Evolutions => {
+    const evolutions: Evolutions = {
+        id: parseInt(chain.species.url.split("/").slice(-2)[0]),
+        baseEvol: { name: chain.species.name, id: parseInt(chain.species.url.split("/").slice(-2)[0]) },
+        notEvolution: chain.evolves_to.length === 0
+    };
+
+    if (chain.evolves_to.length > 0) {
+        evolutions.nextEvol = {
+            name: chain.evolves_to[0].species.name,
+            id: parseInt(chain.evolves_to[0].species.url.split("/").slice(-2)[0])
+        };
+
+        if (chain.evolves_to[0].evolves_to.length > 0) {
+            evolutions.lastEvol = {
+                name: chain.evolves_to[0].evolves_to[0].species.name,
+                id: parseInt(chain.evolves_to[0].evolves_to[0].species.url.split("/").slice(-2)[0])
+            };
+        }
     }
 
-}
+    return evolutions;
+};
+
+const pokeEvolutions = async (id: number | string) => {
+    try {
+        const evolData: EvolutionChain = await fetchFromApi("evolution-chain", id);
+        return extractEvolutions(evolData.chain);
+    } catch (error) {
+        console.error("Error en pokeEvolutions:", error);
+        throw new Error("No se pudo obtener la evolución del Pokémon");
+    }
+};
+
+export const pokeInfo = async (input: number | string): Promise<Pokemon | null> => {
+    try {
+        const [basicInfo, extraInfo] = await Promise.all([
+            pokeBasicInfo(input),
+            pokeExtraInfo(input)
+        ]);
+
+        if (!basicInfo || !extraInfo) {
+            throw new Error("No se pudo obtener información completa del Pokémon");
+        }
+
+        const evolutions = await pokeEvolutions(extraInfo.evolId);
+
+        return { ...basicInfo, color: extraInfo.color, evolutions };
+    } catch (error) {
+        console.error("Error en pokeInfo:", error);
+        return null;
+    }
+};

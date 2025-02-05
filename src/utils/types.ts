@@ -6,21 +6,23 @@
 
 interface PokemonStat {
     base_stat: number;
-    stat: { name: string; url: string };
+    stat: { name: string; id: number };
 }
 
 interface PokemonAbility {
-    ability: { name: string; url: string };
+    ability: { name: string; id: number };
 }
 
-
+interface PokemonColor {
+    color: { name: string, id: number};
+}
 // Tipado de la respuesta de "pokemon-species"
 export interface PokemonSpecies {
-    color: string;
+    color: { name: string, url: string };
     evolution_chain: {
         url: string;
     };
-    evolves_from_species: string | null;
+    evolves_from_species: { name: string, id: number } | null;
 }
 
 // Tipado de la respuesta de "evolution-chain"
@@ -44,7 +46,8 @@ export interface EvolutionChain {
 // Tipado de la estructura de evoluciones
 export interface Evolutions {
     notEvolution?: boolean;
-    firstEvol?: {
+    id: number | string;
+    nextEvol?: {
         name: string;
         id: number;
     };
@@ -52,6 +55,10 @@ export interface Evolutions {
         name: string;
         id: number;
     };
+    baseEvol?: {
+        name: string;
+        id: number;
+    } | null;
 }
 
 export interface Pokemon {
@@ -60,6 +67,8 @@ export interface Pokemon {
     sprites: Record<string, unknown>;
     stats: PokemonStat[];
     abilities: PokemonAbility[];
+    color: PokemonColor;
+    evolutions: Evolutions;
 }
 
 export interface PokemonState {

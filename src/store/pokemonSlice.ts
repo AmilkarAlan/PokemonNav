@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { pokeBasicInfo, pokemonExtraInfo } from "../utils/pokemonUtils";
+import { pokeInfo } from "../utils/pokemonUtils";
 import { PokemonState } from "../utils/types";
 
 
@@ -14,8 +14,7 @@ const initialState: PokemonState = {
 export const fetchPokeData = createAsyncThunk("pokemon/fetchPokeData",
     async (input: string | number) => {
         // const pokeData = await pokeBasicInfo(input);
-        const pokeData = await pokemonExtraInfo(input)
-        console.log(pokeData);
+        const pokeData = await pokeInfo(input)
         return pokeData
     }
 )
