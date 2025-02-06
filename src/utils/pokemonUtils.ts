@@ -1,10 +1,26 @@
 import { fetchFromApi } from "./api";
 import { EvolutionChain, Evolutions, Pokemon, PokemonSpecies } from "./types";
-
+const language = navigator.language || navigator.userLanguage;
+const languageCode = language.split('-')[0];
 const pokeBasicInfo = async (input: string | number) => {
     try {
         const data = await fetchFromApi("pokemon", input);
         const { id, name, sprites, stats, abilities, types } = data;
+
+        const baseType = await Promise.all(types.map(async (type) => {
+            const id = parseInt(type.type.url.split("/").slice(-2)[0]);
+            const typeData = await fetchFromApi("type", id);
+            const typeNameChange = typeData.names.filter((n) => n.language.name === languageCode);
+            console.log(typeData.name)
+            
+            const name = typeNameChange.length > 0 ? typeNameChange[0].name : typeData.names.find((n) => n.language.name === "en")?.name;
+            return {
+                name,
+                id,
+                slot: type.slot,
+                icon: `/src/assets/icons/${typeData.name}.svg`
+            }
+        }))
 
 
         return {
@@ -23,10 +39,7 @@ const pokeBasicInfo = async (input: string | number) => {
                 ability: { name: ab.ability.name, id: parseInt(ab.ability.url.split("/").slice(-2)[0]) },
                 slot: ab.slot
             })),
-            types: types.map((ty: { slot: number; type: { name: string, url: string }; }) => ({
-                type: { name: ty.type.name, id: parseInt(ty.type.url.split("/").slice(-2)[0]) },
-                slot: ty.slot
-            }))
+            types: baseType,
         };
     } catch (error) {
         console.error("Error en pokeBasicInfo:", error);
@@ -37,12 +50,25 @@ const pokeBasicInfo = async (input: string | number) => {
 const pokeExtraInfo = async (input: string | number) => {
     try {
         const data: PokemonSpecies = await fetchFromApi("pokemon-species", input);
-        const language = navigator.language || navigator.userLanguage;
-        const languageCode = language.split('-')[0];
-        const descriptionText = data.flavor_text_entries.filter(entry => entry.language.name === languageCode).map((tx) => ({
-            flavor_text: tx.flavor_text,
-            language: { name: tx.language.name, id: parseInt(tx.language.url.split("/").slice(-2)[0]) }
-        }))
+
+
+        // Primero intentamos obtener las descripciones en el idioma del navegador
+        let descriptionText = data.flavor_text_entries
+            .filter(entry => entry.language.name === languageCode)
+            .map(tx => ({
+                flavor_text: tx.flavor_text ?? "no entry",
+                language: { name: tx.language?.name, id: parseInt(tx.language.url.split("/").slice(-2)[0]) }
+            }));
+
+        // Si no se encontró ninguna descripción en el idioma del navegador, buscamos en inglés
+        if (descriptionText.length === 0) {
+            descriptionText = data.flavor_text_entries
+                .filter(entry => entry.language.name === "en") // Filtramos por inglés
+                .map(tx => ({
+                    flavor_text: tx.flavor_text ?? "no entry",
+                    language: { name: tx.language?.name, id: parseInt(tx.language.url.split("/").slice(-2)[0]) }
+                }));
+        }
         const color = {
             name: data.color.name,
             id: parseInt(data.color.url.split("/").slice(-2)[0])
@@ -99,8 +125,8 @@ export const pokeInfo = async (input: number | string): Promise<Pokemon | null> 
         if (!basicInfo || !extraInfo) {
             throw new Error("No se pudo obtener información completa del Pokémon");
         }
-        const { evolId, ...extraInfoFilter } = extraInfo
         const evolutions = await pokeEvolutions(extraInfo.evolId);
+        const { evolId, ...extraInfoFilter } = extraInfo
 
         return { ...basicInfo, ...extraInfoFilter, evolutions };
     } catch (error) {

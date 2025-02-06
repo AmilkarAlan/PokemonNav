@@ -19,12 +19,15 @@ interface PokemonAbility {
     slot: number;
 }
 interface PokemonType {
-    type: { name: string; id: number };
+    name: string;
+    id: number;
     slot: number;
+    icon:string
 }
 
 interface PokemonColor {
-    color: { name: string, id: number };
+    name: string;
+    id: number;
 }
 // Tipado de la respuesta de "pokemon-species"
 export interface PokemonSpecies {
