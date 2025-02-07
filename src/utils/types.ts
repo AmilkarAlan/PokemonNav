@@ -74,14 +74,19 @@ export interface Evolutions {
     nextEvol?: {
         name: string;
         id: number;
+        miniImg: string;
+        evol_level: number
     };
     lastEvol?: {
         name: string;
         id: number;
+        miniImg: string;
+        evol_level: number;
     };
     baseEvol?: {
         name: string;
         id: number;
+        miniImg: string;
     } | null;
 }
 

@@ -1,13 +1,11 @@
+import { useMemo } from "react";
 import { PokemonType } from "../utils/types";
 
 
 
 
 const BioView = ({ description, weight, height, types, color }: {
-    description: {
-        text: string;
-        langage: { name: string, id: number };
-    };
+    description: string;
     weight: number;
     height: number;
     types: PokemonType;
@@ -20,12 +18,9 @@ const BioView = ({ description, weight, height, types, color }: {
 
         return `${numberToDec.toFixed(1)}`;
     };
-    const getRandomDescription = (descriptions: { text: string }) => {
-        if (descriptions.length === 0) return ""; // Si no hay descripciones, retornar vacío
-        const randomIndex = Math.floor(Math.random() * descriptions.length); // Índice aleatorio
-        return descriptions[randomIndex].text; // Retornar el texto seleccionado
-    };
-    console.log(`rgba(${color}, 0.5)`);
+
+
+
 
     return (
         <div className='w-full h-full flex flex-col mt-4 '>
@@ -52,7 +47,8 @@ const BioView = ({ description, weight, height, types, color }: {
                 </div>
                 <div className="w-full flex flex-col text-pretty p-4">
                     <p className="text-xl font-bold">Descripción de la pokedex.</p>
-                    <p className="text-lg font-light">{getRandomDescription(description)}</p>
+                    <p className="text-lg font-light">{description}</p>
+
                 </div>
             </div>
 

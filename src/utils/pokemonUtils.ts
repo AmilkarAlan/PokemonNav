@@ -12,7 +12,6 @@ const pokeBasicInfo = async (input: string | number) => {
             const id = parseInt(type.type.url.split("/").slice(-2)[0]);
             const typeData = await fetchFromApi("type", id);
             const typeNameChange = typeData.names.filter((n) => n.language.name === languageCode);
-            console.log(typeData.name)
 
             const name = typeNameChange.length > 0 ? typeNameChange[0].name : typeData.names.find((n) => n.language.name === "en")?.name;
             return {
@@ -94,24 +93,44 @@ const pokeExtraInfo = async (input: string | number) => {
     }
 };
 
-const extractEvolutions = (chain: any): Evolutions => {
+const extractEvolutions = async (chain: any): Promise<Evolutions> => {
+    const { sprites } = await pokeBasicInfo(parseInt(chain.species.url.split("/").slice(-2)[0]));
+
     const evolutions: Evolutions = {
         id: parseInt(chain.species.url.split("/").slice(-2)[0]),
-        baseEvol: { name: chain.species.name, id: parseInt(chain.species.url.split("/").slice(-2)[0]) },
-        notEvolution: chain.evolves_to.length === 0
+        baseEvol: { name: chain.species.name, id: parseInt(chain.species.url.split("/").slice(-2)[0]), miniImg: sprites.miniImg },
+        notEvolution: chain.evolves_to.length === 0,
+        nextEvol: [],  // Ahora será un array
     };
 
     if (chain.evolves_to.length > 0) {
-        evolutions.nextEvol = {
-            name: chain.evolves_to[0].species.name,
-            id: parseInt(chain.evolves_to[0].species.url.split("/").slice(-2)[0])
-        };
+        evolutions.nextEvol = await Promise.all(
+            chain.evolves_to.map(async (evol: any) => {
+                const { sprites } = await pokeBasicInfo(parseInt(evol.species.url.split("/").slice(-2)[0]));
+                return {
+                    name: evol.species.name,
+                    id: parseInt(evol.species.url.split("/").slice(-2)[0]),
+                    miniImg: sprites.miniImg,
+                    evol_level: evol.evolution_details[0]?.min_level || null
+                };
+            })
+        );
 
-        if (chain.evolves_to[0].evolves_to.length > 0) {
-            evolutions.lastEvol = {
-                name: chain.evolves_to[0].evolves_to[0].species.name,
-                id: parseInt(chain.evolves_to[0].evolves_to[0].species.url.split("/").slice(-2)[0])
-            };
+        // Si hay una segunda fase de evolución (última evolución)
+        if (chain.evolves_to.some(evol => evol.evolves_to.length > 0)) {
+            evolutions.lastEvol = await Promise.all(
+                chain.evolves_to.flatMap(evol => 
+                    evol.evolves_to.map(async (finalEvol: any) => {
+                        const { sprites } = await pokeBasicInfo(parseInt(finalEvol.species.url.split("/").slice(-2)[0]));
+                        return {
+                            name: finalEvol.species.name,
+                            id: parseInt(finalEvol.species.url.split("/").slice(-2)[0]),
+                            miniImg: sprites.miniImg,
+                            evol_level: finalEvol.evolution_details[0]?.min_level || null
+                        };
+                    })
+                )
+            );
         }
     }
 
@@ -121,7 +140,9 @@ const extractEvolutions = (chain: any): Evolutions => {
 const pokeEvolutions = async (id: number | string) => {
     try {
         const evolData: EvolutionChain = await fetchFromApi("evolution-chain", id);
-        return extractEvolutions(evolData.chain);
+        const evolutionsChain = await extractEvolutions(evolData.chain);
+
+        return evolutionsChain
     } catch (error) {
         console.error("Error en pokeEvolutions:", error);
         throw new Error("No se pudo obtener la evolución del Pokémon");
