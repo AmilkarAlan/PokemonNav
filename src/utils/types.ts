@@ -6,7 +6,7 @@ interface PokemonSprites {
     other: string | null;
 }
 interface PokemonText {
-    flavor_text: string;
+    text: string;
     language: { name: string, id: number }
 }
 interface PokemonStat {
@@ -18,13 +18,16 @@ interface PokemonAbility {
     ability: { name: string; id: number };
     slot: number;
 }
-interface PokemonType {
+export interface PokemonType {
     name: string;
     id: number;
     slot: number;
-    icon:string
+    icon: string
 }
-
+interface PokemonGenera {
+    text: string;
+    language: { name: string, id: number };
+}
 interface PokemonColor {
     name: string;
     id: number;
@@ -39,6 +42,10 @@ export interface PokemonSpecies {
     flavor_text_entries: {
         flavor_text: string;
         language: { name: string, url: string }
+    }
+    genera: {
+        genus: string;
+        language: { name: string, url: string };
     }
 }
 
@@ -81,14 +88,16 @@ export interface Evolutions {
 export interface Pokemon {
     id: number;
     name: string;
+    weight: number;
+    height: number;
     sprites: PokemonSprites;
     stats: PokemonStat[];
     abilities: PokemonAbility[];
     types: PokemonType[];
     color: PokemonColor;
     evolutions: Evolutions;
-    description: PokemonText[];
-
+    description: PokemonText;
+    genera: PokemonGenera;
 }
 
 export interface PokemonState {
