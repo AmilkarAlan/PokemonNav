@@ -9,13 +9,15 @@ interface PokemonText {
     text: string;
     language: { name: string, id: number }
 }
-interface PokemonStat {
+export interface PokemonStat {
     base_stat: number;
-    stat: { name: string; id: number };
+    name: string;
+    id: number;
 }
 
-interface PokemonAbility {
-    ability: { name: string; id: number };
+export interface PokemonAbility {
+    name: string;
+    id: number;
     slot: number;
 }
 export interface PokemonType {

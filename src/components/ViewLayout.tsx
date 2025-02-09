@@ -3,6 +3,7 @@ import { useSelector } from "react-redux"
 import PokeballIcon from "./PokeballIcon";
 import BioView from "./BioView";
 import Evolutions from "./Evolutions";
+import StatsView from "./StatsView";
 
 const ViewLayout = () => {
     const { pokemon, loading } = useSelector((state: any) => state.pokemon)
@@ -12,33 +13,32 @@ const ViewLayout = () => {
             brown: "amber-900",
             white: "black"
         };
-        const colorName = pokemon.color.name;
+        const colorName = pokemon.color?.name;
         const bgColor = `var(--color-${colorOverrides[colorName] || colorName}${colorName !== "black" && !colorOverrides[colorName] ? "-500" : ""})`;
         const textColor = colorName === "white" ? "black" : "white";
         return { fill: bgColor, height: "80%", position: "absolute", opacity: "0.60", animation: "finalSpin .5s linear" };
-    }, [pokemon.color.name]);
+    }, [pokemon.color?.name]);
 
     const randomDescription = () => {
-        if (pokemon.description.length === 0) return ""; 
+        if (pokemon.description?.length === 0) return "";
         const randomIndex = Math.floor(Math.random() * pokemon.description.length);
         return pokemon.description[randomIndex].text;
     };
 
-    const [elemnts, setElements] = useState([
+    const elemnts = [
         {
             tab: "bio",
             elemnt: <BioView description={randomDescription()} height={pokemon.height} weight={pokemon.weight} types={pokemon.types} color={styles.fill} />
         },
         {
             tab: "estadisticas",
-            elemnt: "",
+            elemnt: <StatsView stats={pokemon.stats} abilities={pokemon.abilities}/>,
         },
         {
             tab: "evoluciones",
             elemnt: <Evolutions evolutions={pokemon.evolutions} />,
         }
     ]
-    );
 
     return (
         <div className='w-full h-full flex flex-col items-center bg-white relative' >

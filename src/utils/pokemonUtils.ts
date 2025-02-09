@@ -12,13 +12,34 @@ const pokeBasicInfo = async (input: string | number) => {
             const id = parseInt(type.type.url.split("/").slice(-2)[0]);
             const typeData = await fetchFromApi("type", id);
             const typeNameChange = typeData.names.filter((n) => n.language.name === languageCode);
-
             const name = typeNameChange.length > 0 ? typeNameChange[0].name : typeData.names.find((n) => n.language.name === "en")?.name;
             return {
                 name,
                 id,
                 slot: type.slot,
                 icon: `/src/assets/icons/${typeData.name}.svg`
+            }
+        }))
+        const baseStats = await Promise.all(stats.map(async (stat) => {
+            const id = parseInt(stat.stat.url.split("/").slice(-2)[0]);
+            const statData = await fetchFromApi("stat", id);
+            const statNameChange = statData.names.filter((n) => n.language.name === languageCode);
+            const name = statNameChange.length > 0 ? statNameChange[0].name : statData.names.find((n) => n.language.name === "en")?.name;
+            return {
+                name,
+                id,
+                base_stat: stat.base_stat
+            }
+        }))
+        const baseAbilities = await Promise.all(abilities.map(async (ab) => {
+            const id = parseInt(ab.ability.url.split("/").slice(-2)[0]);
+            const abilityData = await fetchFromApi("ability", id);
+            const abilityNameChange = abilityData.names.filter((n) => n.language.name === languageCode);
+            const name = abilityNameChange.length > 0 ? abilityNameChange[0].name : abilityData.names.find((n) => n.language.name === "en")?.name;
+            return {
+                name,
+                id,
+                slot: ab.slot
             }
         }))
 
@@ -33,14 +54,8 @@ const pokeBasicInfo = async (input: string | number) => {
                 miniImg: sprites.front_default,
                 other: sprites.other.home.front_default
             },
-            stats: stats.map((stat: { base_stat: number; stat: { name: string, url: string }; }) => ({
-                base_stat: stat.base_stat,
-                stat: { name: stat.stat.name, id: parseInt(stat.stat.url.split("/").slice(-2)[0]) }
-            })),
-            abilities: abilities.map((ab: { ability: { name: string, url: string }; slot: number }) => ({
-                ability: { name: ab.ability.name, id: parseInt(ab.ability.url.split("/").slice(-2)[0]) },
-                slot: ab.slot
-            })),
+            stats: baseStats,
+            abilities: baseAbilities,
             types: baseType,
         };
     } catch (error) {
@@ -119,7 +134,7 @@ const extractEvolutions = async (chain: any): Promise<Evolutions> => {
         // Si hay una segunda fase de evolución (última evolución)
         if (chain.evolves_to.some(evol => evol.evolves_to.length > 0)) {
             evolutions.lastEvol = await Promise.all(
-                chain.evolves_to.flatMap(evol => 
+                chain.evolves_to.flatMap(evol =>
                     evol.evolves_to.map(async (finalEvol: any) => {
                         const { sprites } = await pokeBasicInfo(parseInt(finalEvol.species.url.split("/").slice(-2)[0]));
                         return {
