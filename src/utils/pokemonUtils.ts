@@ -3,23 +3,28 @@ import { EvolutionChain, Evolutions, Pokemon, PokemonSpecies } from "./types";
 // Primero intentamos obtener las descripciones en el idioma del navegador
 const language = navigator.language || navigator.userLanguage;
 const languageCode = language.split('-')[0];
+
+const fetchAndFormat = async (items: any[], endpoint: string) => {
+    return await Promise.all(items.map(async (item) => {
+        const id = parseInt(item[endpoint].url.split("/").slice(-2)[0]);
+        const data = await fetchFromApi(endpoint, id);
+        const localizedName = data.names.find(n => n.language.name === languageCode) 
+            || data.names.find(n => n.language.name === "en");
+        
+        return {
+            name: localizedName?.name,
+            id,
+            slot: item.slot || null,
+            icon: endpoint === "type" ? `/src/assets/icons/${data.name}.svg` : undefined
+        };
+    }));
+};
+
 const pokeBasicInfo = async (input: string | number) => {
     try {
         const data = await fetchFromApi("pokemon", input);
         const { id, name, sprites, stats, abilities, types, height, weight } = data;
 
-        const baseType = await Promise.all(types.map(async (type) => {
-            const id = parseInt(type.type.url.split("/").slice(-2)[0]);
-            const typeData = await fetchFromApi("type", id);
-            const typeNameChange = typeData.names.filter((n) => n.language.name === languageCode);
-            const name = typeNameChange.length > 0 ? typeNameChange[0].name : typeData.names.find((n) => n.language.name === "en")?.name;
-            return {
-                name,
-                id,
-                slot: type.slot,
-                icon: `/src/assets/icons/${typeData.name}.svg`
-            }
-        }))
         const baseStats = await Promise.all(stats.map(async (stat) => {
             const id = parseInt(stat.stat.url.split("/").slice(-2)[0]);
             const statData = await fetchFromApi("stat", id);
@@ -31,19 +36,10 @@ const pokeBasicInfo = async (input: string | number) => {
                 base_stat: stat.base_stat
             }
         }))
-        const baseAbilities = await Promise.all(abilities.map(async (ab) => {
-            const id = parseInt(ab.ability.url.split("/").slice(-2)[0]);
-            const abilityData = await fetchFromApi("ability", id);
-            const abilityNameChange = abilityData.names.filter((n) => n.language.name === languageCode);
-            const name = abilityNameChange.length > 0 ? abilityNameChange[0].name : abilityData.names.find((n) => n.language.name === "en")?.name;
-            return {
-                name,
-                id,
-                slot: ab.slot
-            }
-        }))
-
-
+        const baseType = await fetchAndFormat(types, "type");
+        // const baseStats = await fetchAndFormat(stats, "stat");
+        const baseAbilities = await fetchAndFormat(abilities, "ability");
+        
         return {
             id,
             name,
@@ -79,29 +75,27 @@ const pokeExtraInfo = async (input: string | number) => {
 
         };
 
-        const changeText = (language: string, arr: { genus: string, language: { name: string, url: string } }) => {
-            let traductionText = arr.filter(entry => entry.language.name === languageCode)
-                .map(tx => ({
-                    text: tx.flavor_text || tx.genus || "no entry",
-                    language: { name: tx.language?.name, id: parseInt(tx.language.url.split("/").slice(-2)[0]) }
-                }));
-            if (traductionText.length === 0) {
-                traductionText = arr
-                    .filter(entry => entry.language.name === "en") // Filtramos por inglés
-                    .map(tx => ({
-                        text: tx.flavor_text || tx.genus || "no entry",
-                        language: { name: tx.language?.name, id: parseInt(tx.language.url.split("/").slice(-2)[0]) }
-                    }));
-            }
-            return traductionText;
-        }
+        const changeText = (arr: { genus: string, language: { name: string, url: string } }[]) => {
+            console.log(arr);
+            
+            const traductionText = arr.find(entry => entry.language.name === languageCode) 
+                || arr.find(entry => entry.language.name === "en");
+            
+            return traductionText 
+                ? {
+                    text: traductionText.flavor_text || traductionText.genus || "no entry",
+                    language: { name: traductionText.language?.name, id: parseInt(traductionText.language.url.split("/").slice(-2)[0]) }
+                } 
+                : { text: "no entry", language: { name: "unknown", id: 0 } };
+        };
+        
 
         const colorFormat = {
             name: color.name,
             id: parseInt(color.url.split("/").slice(-2)[0])
         };
 
-        return { color: colorFormat, evolId: parseInt(evolution_chain.url.split("/").slice(-2)[0]), description: changeText(languageCode, flavor_text_entries), genera: changeText(languageCode, genera), isEvolution, evolves_from: evolvesFrom() };
+        return { color: colorFormat, evolId: parseInt(evolution_chain.url.split("/").slice(-2)[0]), description: changeText( flavor_text_entries), genera: changeText(genera), isEvolution, evolves_from: evolvesFrom() };
     } catch (error) {
         console.error("Error en pokeExtraInfo:", error);
         throw new Error("No se pudo obtener información adicional del Pokémon");
@@ -109,48 +103,38 @@ const pokeExtraInfo = async (input: string | number) => {
 };
 
 const extractEvolutions = async (chain: any): Promise<Evolutions> => {
-    const { sprites } = await pokeBasicInfo(parseInt(chain.species.url.split("/").slice(-2)[0]));
+    const ids = [chain.species.url, ...chain.evolves_to.flatMap(evol => 
+        [evol.species.url, ...evol.evolves_to.map(finalEvol => finalEvol.species.url)]
+    )].map(url => parseInt(url.split("/").slice(-2)[0]));
 
-    const evolutions: Evolutions = {
-        id: parseInt(chain.species.url.split("/").slice(-2)[0]),
-        baseEvol: { name: chain.species.name, id: parseInt(chain.species.url.split("/").slice(-2)[0]), miniImg: sprites.miniImg },
+    const spritesData = await Promise.all(ids.map(id => pokeBasicInfo(id)));
+
+    const nextEvol = chain.evolves_to.map((evol, index) => ({
+        name: evol.species.name,
+        id: ids[index + 1],
+        miniImg: spritesData[index + 1].sprites.miniImg,
+        evol_level: evol.evolution_details[0]?.min_level || null
+    }));
+
+    const lastEvol = chain.evolves_to.flatMap(evol => 
+        evol.evolves_to.map((finalEvol, index) => ({
+            name: finalEvol.species.name,
+            id: ids[nextEvol.length + index + 1],
+            miniImg: spritesData[nextEvol.length + index + 1].sprites.miniImg,
+            evol_level: finalEvol.evolution_details[0]?.min_level || null
+        }))
+    );
+
+    return {
+        id: ids[0],
+        baseEvol: { name: chain.species.name, id: ids[0], miniImg: spritesData[0].sprites.miniImg },
         notEvolution: chain.evolves_to.length === 0,
-        nextEvol: [],  // Ahora será un array
+        nextEvol,
+        lastEvol: lastEvol.length > 0 ? lastEvol : undefined
     };
-
-    if (chain.evolves_to.length > 0) {
-        evolutions.nextEvol = await Promise.all(
-            chain.evolves_to.map(async (evol: any) => {
-                const { sprites } = await pokeBasicInfo(parseInt(evol.species.url.split("/").slice(-2)[0]));
-                return {
-                    name: evol.species.name,
-                    id: parseInt(evol.species.url.split("/").slice(-2)[0]),
-                    miniImg: sprites.miniImg,
-                    evol_level: evol.evolution_details[0]?.min_level || null
-                };
-            })
-        );
-
-        // Si hay una segunda fase de evolución (última evolución)
-        if (chain.evolves_to.some(evol => evol.evolves_to.length > 0)) {
-            evolutions.lastEvol = await Promise.all(
-                chain.evolves_to.flatMap(evol =>
-                    evol.evolves_to.map(async (finalEvol: any) => {
-                        const { sprites } = await pokeBasicInfo(parseInt(finalEvol.species.url.split("/").slice(-2)[0]));
-                        return {
-                            name: finalEvol.species.name,
-                            id: parseInt(finalEvol.species.url.split("/").slice(-2)[0]),
-                            miniImg: sprites.miniImg,
-                            evol_level: finalEvol.evolution_details[0]?.min_level || null
-                        };
-                    })
-                )
-            );
-        }
-    }
-
-    return evolutions;
 };
+
+
 
 const pokeEvolutions = async (id: number | string) => {
     try {
@@ -172,8 +156,10 @@ export const pokeInfo = async (input: number | string): Promise<Pokemon | null> 
         ]);
 
         if (!basicInfo || !extraInfo) {
-            throw new Error("No se pudo obtener información completa del Pokémon");
+            console.warn(`No se pudo obtener información para el Pokémon: ${input}`);
+            return null;
         }
+        
         const evolutions = await pokeEvolutions(extraInfo.evolId);
         const { evolId, ...extraInfoFilter } = extraInfo
 

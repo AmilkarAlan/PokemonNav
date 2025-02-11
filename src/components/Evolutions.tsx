@@ -4,7 +4,7 @@ import FlechaDerechaIcon from './FlechaDerechaIcon'
 
 const Evolutions = ({ evolutions }: { evolutions: Evolutions }) => {
     return (
-        <div className='w-full h-full flex justify-center items-center gap-8 '>
+        <div className='w-full h-full flex justify-center items-center gap-8'>
             {/* Renderiza la evolución base */}
             <div className='flex flex-col items-center self-center'>
                 <img src={evolutions.baseEvol?.miniImg} alt={evolutions.baseEvol?.name} />

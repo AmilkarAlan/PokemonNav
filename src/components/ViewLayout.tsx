@@ -19,20 +19,20 @@ const ViewLayout = () => {
         return { fill: bgColor, height: "80%", position: "absolute", opacity: "0.60", animation: "finalSpin .5s linear" };
     }, [pokemon.color?.name]);
 
-    const randomDescription = () => {
-        if (pokemon.description?.length === 0) return "";
-        const randomIndex = Math.floor(Math.random() * pokemon.description.length);
-        return pokemon.description[randomIndex].text;
-    };
+    // const randomDescription = () => {
+    //     if (pokemon.description?.length === 0) return "";
+    //     const randomIndex = Math.floor(Math.random() * pokemon.description.length);
+    //     return pokemon.description[randomIndex].text;
+    // };
 
     const elemnts = [
         {
             tab: "bio",
-            elemnt: <BioView description={randomDescription()} height={pokemon.height} weight={pokemon.weight} types={pokemon.types} color={styles.fill} />
+            elemnt: <BioView description={pokemon.description.text} height={pokemon.height} weight={pokemon.weight} types={pokemon.types} color={styles.fill} />
         },
         {
             tab: "estadisticas",
-            elemnt: <StatsView stats={pokemon.stats} abilities={pokemon.abilities}/>,
+            elemnt: <StatsView stats={pokemon.stats} abilities={pokemon.abilities} />,
         },
         {
             tab: "evoluciones",
@@ -43,12 +43,12 @@ const ViewLayout = () => {
     return (
         <div className='w-full h-full flex flex-col items-center bg-white relative' >
             <PokeballIcon style={styles} />
-            <div className='w-full h-full flex flex-col px-8 pt-4 z-50 relative'>
+            <div className='w-full h-1/2 flex flex-col px-8 pt-4 z-50 relative'>
                 <div className='w-full h-full flex flex-col gap-2 relative lg:flex-row'>
                     <div className='w-full h-full flex justify-center lg:flex-col' style={{ animation: "inObject 2s linear" }}>
                         <p className="text-xl text-gray-600 font-extralight"><span className="font-bold mr-0.5">#</span>{pokemon.id.toString().padStart(4, "0")}</p>
                         <p className="text-6xl font-bold">{pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</p>
-                        <p className="text-2xl text-gray-600 font-light mt-4">{pokemon.genera[0].text}</p>
+                        <p className="text-2xl text-gray-600 font-light mt-4">{pokemon.genera.text}</p>
                     </div>
                     <div className='w-full h-full flex flex-col' style={{ animation: "inObject 1s linear" }}>
                         <img className="h-full object-fill -bottom-3 self-center z-20 absolute" src={pokemon.sprites.fullImg ?? pokemon.sprites.other} alt={pokemon.name} />
@@ -58,7 +58,7 @@ const ViewLayout = () => {
                 </div>
             </div>
 
-            <div className='w-full h-full flex bg-white flex-col rounded-t-2xl z-10' style={{ boxShadow: "0 0px 10px var(--color-black)", animation: "upContainer .3s ease-in" }} >
+            <div className='w-full h-1/2 flex bg-white flex-col rounded-t-2xl z-10' style={{ boxShadow: "0 0px 10px var(--color-black)", animation: "upContainer .3s ease-in" }} >
                 <div className='w-full flex gap-4 px-8'>
                     {["bio", "estadisticas", "evoluciones"].map((tab, i) => (
                         <div onClick={() => setTabActive(tab)} key={i} className={`w-full flex items-end justify-center h-10 bg-white rounded-b-2xl transition-all duration-200 cursor-pointer ${tabActive === tab ? "shadow-md shadow-black/45 border-b-2" : "shadow-sm"} `} style={{ borderColor: styles.fill }}>
@@ -66,7 +66,9 @@ const ViewLayout = () => {
                         </div>
                     ))}
                 </div>
-                {elemnts.find(e => e.tab === tabActive)?.elemnt || null}
+                <section className="h-full w-full">
+                    {elemnts.find(e => e.tab === tabActive)?.elemnt || null}
+                </section>
             </div>
         </div>
     )

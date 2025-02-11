@@ -44,26 +44,24 @@ export interface PokemonSpecies {
     flavor_text_entries: {
         flavor_text: string;
         language: { name: string, url: string }
-    }
+    }[];
     genera: {
         genus: string;
         language: { name: string, url: string };
-    }
+    }[];
 }
 
 // Tipado de la respuesta de "evolution-chain"
 export interface EvolutionChain {
     chain: {
+        species: { name: string; url: string };
         evolves_to: {
-            species: {
-                name: string;
-                url: string;
-            };
-            evolves_to?: {
-                species: {
-                    name: string;
-                    url: string;
-                };
+            species: { name: string; url: string };
+            evolves_to: {
+                species: { name: string; url: string };
+                evolves_to?: {
+                    species: { name: string; url: string };
+                }[];
             }[];
         }[];
     };
@@ -71,19 +69,19 @@ export interface EvolutionChain {
 
 // Tipado de la estructura de evoluciones
 export interface Evolutions {
-    notEvolution?: boolean;
+    notEvolution: boolean;
     id: number | string;
     nextEvol?: {
         name: string;
         id: number;
         miniImg: string;
-        evol_level: number
+        evol_level?: number;
     };
     lastEvol?: {
         name: string;
         id: number;
         miniImg: string;
-        evol_level: number;
+        evol_level?: number;
     };
     baseEvol?: {
         name: string;
@@ -91,6 +89,7 @@ export interface Evolutions {
         miniImg: string;
     } | null;
 }
+
 
 export interface Pokemon {
     id: number;
