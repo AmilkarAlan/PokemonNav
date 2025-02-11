@@ -8,9 +8,9 @@ const fetchAndFormat = async (items: any[], endpoint: string) => {
     return await Promise.all(items.map(async (item) => {
         const id = parseInt(item[endpoint].url.split("/").slice(-2)[0]);
         const data = await fetchFromApi(endpoint, id);
-        const localizedName = data.names.find(n => n.language.name === languageCode) 
+        const localizedName = data.names.find(n => n.language.name === languageCode)
             || data.names.find(n => n.language.name === "en");
-        
+
         return {
             name: localizedName?.name,
             id,
@@ -36,10 +36,10 @@ const pokeBasicInfo = async (input: string | number) => {
                 base_stat: stat.base_stat
             }
         }))
+
         const baseType = await fetchAndFormat(types, "type");
-        // const baseStats = await fetchAndFormat(stats, "stat");
         const baseAbilities = await fetchAndFormat(abilities, "ability");
-        
+
         return {
             id,
             name,
@@ -75,27 +75,26 @@ const pokeExtraInfo = async (input: string | number) => {
 
         };
 
-        const changeText = (arr: { genus: string, language: { name: string, url: string } }[]) => {
-            console.log(arr);
-            
-            const traductionText = arr.find(entry => entry.language.name === languageCode) 
+        const changeText = (arr: any[]) => {
+
+            const traductionText = arr.find(entry => entry.language.name === languageCode)
                 || arr.find(entry => entry.language.name === "en");
-            
-            return traductionText 
+
+            return traductionText
                 ? {
                     text: traductionText.flavor_text || traductionText.genus || "no entry",
                     language: { name: traductionText.language?.name, id: parseInt(traductionText.language.url.split("/").slice(-2)[0]) }
-                } 
+                }
                 : { text: "no entry", language: { name: "unknown", id: 0 } };
         };
-        
+
 
         const colorFormat = {
             name: color.name,
             id: parseInt(color.url.split("/").slice(-2)[0])
         };
 
-        return { color: colorFormat, evolId: parseInt(evolution_chain.url.split("/").slice(-2)[0]), description: changeText( flavor_text_entries), genera: changeText(genera), isEvolution, evolves_from: evolvesFrom() };
+        return { color: colorFormat, evolId: parseInt(evolution_chain.url.split("/").slice(-2)[0]), description: changeText(flavor_text_entries), genera: changeText(genera), isEvolution, evolves_from: evolvesFrom() };
     } catch (error) {
         console.error("Error en pokeExtraInfo:", error);
         throw new Error("No se pudo obtener información adicional del Pokémon");
@@ -103,10 +102,11 @@ const pokeExtraInfo = async (input: string | number) => {
 };
 
 const extractEvolutions = async (chain: any): Promise<Evolutions> => {
-    const ids = [chain.species.url, ...chain.evolves_to.flatMap(evol => 
+    // extraemos el id de la url correspondiente a la evolución
+    const ids = [chain.species.url, ...chain.evolves_to.flatMap(evol =>
         [evol.species.url, ...evol.evolves_to.map(finalEvol => finalEvol.species.url)]
     )].map(url => parseInt(url.split("/").slice(-2)[0]));
-
+    // Solicitud a la api para obtener datos de evoluciones
     const spritesData = await Promise.all(ids.map(id => pokeBasicInfo(id)));
 
     const nextEvol = chain.evolves_to.map((evol, index) => ({
@@ -116,7 +116,7 @@ const extractEvolutions = async (chain: any): Promise<Evolutions> => {
         evol_level: evol.evolution_details[0]?.min_level || null
     }));
 
-    const lastEvol = chain.evolves_to.flatMap(evol => 
+    const lastEvol = chain.evolves_to.flatMap(evol =>
         evol.evolves_to.map((finalEvol, index) => ({
             name: finalEvol.species.name,
             id: ids[nextEvol.length + index + 1],
@@ -130,7 +130,7 @@ const extractEvolutions = async (chain: any): Promise<Evolutions> => {
         baseEvol: { name: chain.species.name, id: ids[0], miniImg: spritesData[0].sprites.miniImg },
         notEvolution: chain.evolves_to.length === 0,
         nextEvol,
-        lastEvol: lastEvol.length > 0 ? lastEvol : undefined
+        lastEvol: lastEvol.length > 0 ? lastEvol : null
     };
 };
 
@@ -159,7 +159,7 @@ export const pokeInfo = async (input: number | string): Promise<Pokemon | null> 
             console.warn(`No se pudo obtener información para el Pokémon: ${input}`);
             return null;
         }
-        
+
         const evolutions = await pokeEvolutions(extraInfo.evolId);
         const { evolId, ...extraInfoFilter } = extraInfo
 

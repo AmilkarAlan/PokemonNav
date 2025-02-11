@@ -10,14 +10,15 @@ import { fetchPokeData } from '../store/pokemonSlice'
 const PokeView = () => {
   const { pokemon, loading } = useSelector((state: any) => state.pokemon)
   const dispatch = useDispatch();
-  useEffect(() => {
-    if (!pokemon) {
-      dispatch(fetchPokeData(1));
-    }
-  }, [pokemon]);
+  // useEffect(() => {
+  //   if (!pokemon) {
+  //     dispatch(fetchPokeData(1));
+  //   }
+  // }, [pokemon]);
   return (
-    <section className='w-fit h-full flex flex-col my-4 rounded-xl overflow-hidden lg:w-2/3'>
+    <section className='w-full rounded-xl overflow-hidden'>
       {loading | !pokemon ? <LoadingLayout /> : <ViewLayout />}
+
 
     </section>
 

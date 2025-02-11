@@ -16,7 +16,7 @@ const Search = () => {
         }
     }
     return (
-        <section className="h-fit w-1/2 mt-5 bg-white rounded-xl p-4">
+        <section className="h-fit w-full bg-white rounded-xl">
             <form className="flex gap-2 items-center" onSubmit={(e) => search(e)}>
                 <label htmlFor="search">Buscador</label>
                 <div className="border border-slate-500/25 rounded-xl py-2 transition-all duration-400 focus-within:border-slate-600">

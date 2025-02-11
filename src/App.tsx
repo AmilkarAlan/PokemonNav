@@ -8,7 +8,7 @@ function App() {
 
 
   return (
-    <main className='w-screen h-screen flex flex-col items-center justify-center'>
+    <main className='min-h-full  flex flex-col items-center justify-center overflow-auto px-4 py-5'>
       <Search />
       <PokeView />
     </main>
