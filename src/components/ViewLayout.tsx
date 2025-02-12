@@ -6,6 +6,7 @@ import Evolutions from "./Evolutions";
 import StatsView from "./StatsView";
 import abrirArriba from "../assets/icons/abrirArriba.svg"
 import cerrarAbajo from "../assets/icons/cerrarAbajo.svg"
+import ButtonsPad from "./ButtonsPad";
 const ViewLayout = () => {
     const { pokemon, loading } = useSelector((state: any) => state.pokemon)
     const [openTab, setOpenTav] = useState(false)
@@ -25,7 +26,7 @@ const ViewLayout = () => {
         const colorName = pokemon.color?.name;
         const bgColor = `var(--color-${colorOverrides[colorName] || colorName}${colorName !== "black" && !colorOverrides[colorName] ? "-500" : ""})`;
         const textColor = colorName === "white" ? "black" : "white";
-        return { fill: bgColor, width: "100%", height: "100%", position: "absolute", opacity: "0.50", animation: "finalSpin .5s linear", left: "50%" };
+        return { fill: bgColor, width: "100%", height: "100%", position: "absolute", zIndex: "-1", opacity: "0.50", animation: "finalSpin .5s linear", left: "50%" };
     }, [pokemon.color?.name]);
 
     const elemnts = [
@@ -44,9 +45,10 @@ const ViewLayout = () => {
     ]
 
     return (
-        <div className='w-full h-full flex flex-col items-center bg-white rounded-xl overflow-hidden relative' >
+        <div className='w-full grid grid-flow-row bg-white rounded-xl overflow-hidden z-10 relative' >
             <PokeballIcon style={styles} />
-            <div className='w-full h-full flex flex-col mt-2 relative' style={{ animation: "inObject 2s linear" }}>
+            <div className='w-full h-full flex flex-col z-20' style={{ animation: "inObject 2s linear" }}>
+                <ButtonsPad id={pokemon.id}/>
                 <div className='flex flex-col' style={{ animation: "inObject 1s linear" }}>
                     {/* {pokemon.isEvolution ? (
                             <div>
@@ -74,10 +76,10 @@ const ViewLayout = () => {
                     ))}
                 </div>
             </div>
-            <div className={`w-full h-2/3 flex bg-white flex-col rounded-t-2xl absolute z-10 transition-all duration-300 bottom-0 ${openTab ? "translate-y-0" : "translate-y-[90%]"}`} style={{ boxShadow: "0 0px 10px var(--color-black)"}} >
+            <div className={`w-full h-[90%] flex bg-white flex-col rounded-t-xl absolute z-30 transition-all duration-300 bottom-0 ${openTab ? "translate-y-0" : "translate-y-[90%]"}`} style={{ boxShadow: "0 0px 10px var(--color-black)" }} >
                 <div className='w-full flex flex-col'>
                     <div className="w-full flex justify-center">
-                    <button  onClick={() => setOpenTav(!openTab)}><img className="w-10" src={openTab ? cerrarAbajo : abrirArriba} alt="" /></button>
+                        <button onClick={() => setOpenTav(!openTab)}><img className="w-10" src={openTab ? cerrarAbajo : abrirArriba} alt="" /></button>
 
                     </div>
                     <div className="flex">
