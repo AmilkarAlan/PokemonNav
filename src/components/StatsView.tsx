@@ -12,7 +12,7 @@ const StatsView = ({ stats, abilities }: { stats: PokemonStat[], abilities: Poke
                 <div className="flex gap-2 justify-center">
                     {
                         abilities.map((ab, i) => (
-                            <div key={i} className="p-2 rounded-xl border border-slate-400">
+                            <div key={i}  className='w-fit h-fit flex items-center gap-2 bg-slate-400 rounded-sm shadow-sm shadow-black mb-4 p-1'>
                                 <p className="text-sm">{ab.name}</p>
                             </div>
                         ))

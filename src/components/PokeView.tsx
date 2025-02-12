@@ -16,10 +16,8 @@ const PokeView = () => {
   //   }
   // }, [pokemon]);
   return (
-    <section className='w-full rounded-xl overflow-hidden'>
+    <section className='w-full h-screen flex justify-center'>
       {loading | !pokemon ? <LoadingLayout /> : <ViewLayout />}
-
-
     </section>
 
   )
