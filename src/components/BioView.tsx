@@ -1,8 +1,3 @@
-import { useMemo } from "react";
-import { PokemonType } from "../utils/types";
-
-
-
 
 const BioView = ({ description, weight, height}: {
     description: string;
@@ -23,7 +18,6 @@ const BioView = ({ description, weight, height}: {
 
     return (
         <div className='w-full h-full flex mt-4'>
-
             <div className="w-fit h-full flex flex-col gap-4 items-start">
                 <div className="w-full flex justify-around">
                     <div className="flex flex-col items-center justify-center gap-2">

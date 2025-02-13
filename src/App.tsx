@@ -1,6 +1,6 @@
 
 import './App.css'
-import PokeView from './components/PokeView'
+import PokeView from './components/PokeLayout'
 import Search from './components/Search'
 
 

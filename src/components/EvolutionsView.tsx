@@ -2,7 +2,7 @@ import React from 'react'
 import { Evolutions } from '../utils/types'
 import FlechaDerechaIcon from './FlechaDerechaIcon'
 
-const Evolutions = ({ evolutions }: { evolutions: Evolutions }) => {
+const EvolutionsView = ({ evolutions }: { evolutions: Evolutions }) => {
     return (
         <div className='w-full h-full flex justify-center items-center gap-8'>
             {/* Renderiza la evolución base */}
@@ -67,4 +67,4 @@ const Evolutions = ({ evolutions }: { evolutions: Evolutions }) => {
     )
 }
 
-export default Evolutions
+export default EvolutionsView
