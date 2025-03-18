@@ -1,11 +1,23 @@
 @import "tailwindcss";
 
+@layer base {
+  @font-face {
+    font-family: 'Pokemon Solid';
+    src: url('./assets/fonts/PokemonSolidNormal-xyWR.ttf') format('truetype');
+  }
+}
+
+@layer utilities {
+  .font-pokemon-solid {
+    font-family: 'Pokemon Solid', sans-serif;
+  }
+}
+
 body {
-    background-color: slategray;
+    font-family: "Roboto", sans-serif;
     width: 100dvw;
     height: 100dvh;
     font-size: 16px;
-
 }
 
 @keyframes blink {

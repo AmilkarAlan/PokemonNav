@@ -4,18 +4,12 @@ import ViewLayout from './PokeView'
 import { useEffect, useMemo } from 'react'
 import { fetchPokeData } from '../store/pokemonSlice'
 import PokeballIcon from './PokeballIcon'
+import Layout from './Layout'
 
 
 
 const PokeLayout = () => {
   const { pokemon, loading } = useSelector((state: any) => state.pokemon)
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    if (!pokemon) {
-      dispatch(fetchPokeData(1));
-    }
-  }, [pokemon]);
 
   const styles = useMemo(() => {
     if (!pokemon) {
@@ -39,7 +33,7 @@ const PokeLayout = () => {
         transition: "translate .5s ease-in-out",
         ...styles
       }} />
-      {loading | !pokemon ? null : <ViewLayout />}
+      {loading | !pokemon ? null : <Layout />}
     </section>
 
   )

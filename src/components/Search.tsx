@@ -16,8 +16,8 @@ const Search = () => {
         }
     }
     return (
-        <section className="h-fit w-full bg-white rounded-xl my-4">
-            <form className="flex gap-2 items-center" onSubmit={(e) => search(e)}>
+        <section className="h-full w-full col-span-2 overflow-hidden flex items-center justify-center rounded-xl border-4 border-gray-500 bg-white">
+            <form className="w-full flex gap-2 items-center justify-center  py-1.5 px-2.5" onSubmit={(e) => search(e)}>
                 <label htmlFor="search">Buscador</label>
                 <div className="border border-slate-500/25 rounded-xl py-2 transition-all duration-400 focus-within:border-slate-600">
                     <input className="h-fit outline-none" type="text" name='search' placeholder='Ejemplo: Pikachu ó 25' onChange={(e) => setInput(e.target.value)} value={input} />

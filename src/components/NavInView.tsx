@@ -34,7 +34,7 @@ const NavInView = () => {
         }
     ]
     return (
-        <section className={`w-full h-[90%] flex bg-white flex-col rounded-t-xl absolute z-40 transition-all duration-300 bottom-0 ${openTab ? "translate-y-0" : "translate-y-[90%]"}`} style={{ boxShadow: "0 0px 10px var(--color-black)" }} >
+        <section className={`w-full h-[90%] flex bg-white flex-col rounded-t-xl absolute z-50 transition-all duration-300 bottom-0 ${openTab ? "translate-y-0" : "translate-y-[90%]"}`} style={{ boxShadow: "0 0px 10px var(--color-black)" }} >
             <div className='w-full flex flex-col'>
                 <div className="w-full flex justify-center">
                     <button onClick={() => setOpenTav(!openTab)}><img className="w-10" src={openTab ? cerrarAbajo : abrirArriba} alt="" /></button>
