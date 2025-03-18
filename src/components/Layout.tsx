@@ -6,6 +6,7 @@ import { useMemo } from "react"
 import PokeballIcon from "./PokeballIcon"
 import ButtonsPad from "./ButtonsPad"
 import FlechaDerechaIcon from "./FlechaDerechaIcon"
+import PokemonStatChart from './StatComponent'
 
 const Layout = () => {
     const { pokemon, loading } = useSelector((state: any) => state.pokemon)
@@ -91,9 +92,9 @@ const Layout = () => {
                             <p className="mb-2 font-bold text-lg">Estadisticas base</p>
                             {
                                 pokemon.stats.map((stat, i) => (
-                                    <div className="flex justify-between px-2 text-sm" key={i}>
+                                    <div className="w-full h-full flex justify-between items-center px-2 text-sm" key={i}>
                                         <p>{stat.name}</p>
-                                        <p>{stat.base_stat}</p>
+                                        <PokemonStatChart stat={stat.base_stat} color={styles?.fill}/>
                                     </div>
 
                                 ))
